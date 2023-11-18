@@ -1,7 +1,8 @@
 const router = require('express').Router();
 const LivestreamController = require('../../controllers/livestreamControllers/livestreamController');
+const authentication = require('../../middlewares/authentication');
 
-router.get('/:livestreamId/status', LivestreamController.handleStatusLivestream);
-router.put('/:livestreamId/status', LivestreamController.handleUpdateStatusLivestream);
+router.patch('/:livestreamId/status', LivestreamController.handleUpdateStatusLivestream);
+router.post('/donate', authentication, LivestreamController.handleLivestreamDonate);
 
 module.exports = router;
