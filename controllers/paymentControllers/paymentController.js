@@ -4,7 +4,9 @@ const { PaymentHistory, Wallet } = require('../../models');
 class PaymentController {
   static async handleTokenMidtrans(req, res, next) {
     try {
-      const token = await PaymentModel.midtransToken(req.user);
+      const token = await PaymentModel.midtransToken(req.user, req.body);
+      console.log(req.user);
+
       res.status(200).json({ midtrans_token: token });
     } catch (err) {
       next(err);
@@ -23,7 +25,7 @@ class PaymentController {
 
         return res.status(200).json({ message: 'Update balance Succes' });
       }
-      return res.status(200).json({ message: 'Update balance failed' });
+      return res.status(400).json({ message: 'Update balance failed' });
     } catch (err) {
       next(err);
     }
