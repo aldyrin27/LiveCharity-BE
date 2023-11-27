@@ -1,6 +1,6 @@
 const { Livestream, User, Donation, Category } = require('../../models');
 const { v4: uuidv4 } = require('uuid');
-
+const cloudinary = require('../../config/cloudinary');
 class CampaignController {
   static async handleCampaign(req, res, next) {
     try {
@@ -17,10 +17,27 @@ class CampaignController {
     try {
       const { page, search } = req.query;
       let pages = Number(page) ? +page : 1;
-      let options = { limit: 9, offset: (pages - 1) * 9 };
+      let options = { limit: 9, offset: (pages - 1) * 9, include: ['Category'] };
 
       if (search) {
         options.where = { CategoryId: search.split(',') };
+      }
+
+      const pagenation = await Livestream.findAndCountAll(options);
+      res.status(200).json(pagenation);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  static async handleCampaignPagenationUser(req, res, next) {
+    try {
+      const { page, search } = req.query;
+      let pages = Number(page) ? +page : 1;
+      let options = { limit: 9, offset: (pages - 1) * 9, include: ['Category'], where: { UserId: req.user.id } };
+
+      if (search) {
+        options.where = { CategoryId: search.split(','), UserId: req.user.id };
       }
 
       const pagenation = await Livestream.findAndCountAll(options);
@@ -60,16 +77,11 @@ class CampaignController {
   static async handleCampaignAdd(req, res, next) {
     try {
       const { title, targetFunds, expireDate, description, categoryId } = req.body;
-
-      const image = req?.file?.path;
-
-      // if(image?.mimeType !== 'image/png' && image?.mimeType !== 'image/jpg' && image?.mimeType !== 'image/jpeg') {
-      //   throw { status: 400, error: 'File must be contain extention .png, .jgp, .or .jpeg' };
-      // }
+      const response = await cloudinary.uploader.upload(req?.file?.path);
       const data = await Livestream.create({
         title,
         targetFunds,
-        thumbnail: image,
+        thumbnail: response.secure_url,
         expireDate,
         description,
         UserId: req.user.id,
@@ -78,7 +90,6 @@ class CampaignController {
       });
       res.status(200).json(data);
     } catch (err) {
-      // console.log(err);
       next(err);
     }
   }

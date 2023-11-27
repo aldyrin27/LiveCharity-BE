@@ -30,10 +30,9 @@ module.exports = {
         let transactionToken = transaction.token;
         return transactionToken;
       });
-      console.log(await token, '<========================');
+      // console.log(await token, '<========================');
       return token;
     } catch (err) {
-      console.log(err);
       throw err;
     }
   },
